@@ -1,15 +1,18 @@
 package com.example.lesson7
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.lesson7.models.Hero
 
-class HeroesRecyclerViewAdapter(private val items: MutableList<Hero> = mutableListOf()) :
+class HeroesRecyclerViewAdapter(
+    private val items: MutableList<Hero> = mutableListOf(),
+    val onItemClick: (result: Hero) -> Unit
+) :
     RecyclerView.Adapter<HeroViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HeroViewHolder {
         val listItemView = LayoutInflater
@@ -25,6 +28,7 @@ class HeroesRecyclerViewAdapter(private val items: MutableList<Hero> = mutableLi
         holder.name.text = item.name
         Glide.with(holder.itemView).load(item.images.md).into(holder.image)
         holder.race.text = item.appearance.race
+        holder.itemView.setOnClickListener { onItemClick(items[position]) }
     }
 }
 

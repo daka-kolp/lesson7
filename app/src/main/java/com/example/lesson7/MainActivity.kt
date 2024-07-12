@@ -1,6 +1,7 @@
 package com.example.lesson7
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.os.Bundle
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,7 +30,13 @@ class MainActivity : Activity() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
                 val items = it
-                val myAdapter = HeroesRecyclerViewAdapter(items as MutableList<Hero>)
+                val myAdapter = HeroesRecyclerViewAdapter(items as MutableList<Hero>) { hero ->
+                    AlertDialog.Builder(this@MainActivity)
+                        .setTitle(hero.name)
+                        .setMessage(hero.allInfo())
+                        .create()
+                        .show()
+                }
                 recyclerView.adapter = myAdapter
             }, {
                 Toast
