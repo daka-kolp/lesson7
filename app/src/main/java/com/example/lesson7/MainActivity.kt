@@ -1,47 +1,47 @@
 package com.example.lesson7
 
+import android.app.Activity
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.lesson7.ui.theme.Lesson7Theme
+import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.lesson7.models.Hero
+import com.example.lesson7.network.HeroService
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 
-class MainActivity : ComponentActivity() {
+
+class MainActivity : Activity() {
+    private val disposable = CompositeDisposable()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            Lesson7Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
-        }
+
+        setContentView(R.layout.heroes_layout)
+
+        val recyclerView: RecyclerView = findViewById(R.id.hero_recycler_view)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        val api = ApiClient.retrofit.create(HeroService::class.java)
+
+        val result = api.getHeroes()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                val items = it
+                val myAdapter = HeroesRecyclerViewAdapter(items as MutableList<Hero>)
+                recyclerView.adapter = myAdapter
+            }, {
+                Toast
+                    .makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT)
+                    .show()
+            })
+
+        disposable.add(result)
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Lesson7Theme {
-        Greeting("Android")
+    override fun onDestroy() {
+        disposable.dispose()
+        super.onDestroy()
     }
 }
