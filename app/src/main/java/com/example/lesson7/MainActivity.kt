@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.os.Bundle
 import android.widget.Toast
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lesson7.models.Hero
@@ -12,9 +13,10 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 
-
 class MainActivity : Activity() {
     private val disposable = CompositeDisposable()
+    private var adapter: HeroesRecyclerViewAdapter? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -22,6 +24,7 @@ class MainActivity : Activity() {
 
         val recyclerView: RecyclerView = findViewById(R.id.hero_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
+        attachTouchHelper(recyclerView)
 
         val api = ApiClient.retrofit.create(HeroService::class.java)
 
@@ -29,26 +32,53 @@ class MainActivity : Activity() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
-                onItemFetched(it, recyclerView)
+                onItemsFetched(it, recyclerView)
             }, {
-                onItemFetchedError(it)
+                onItemsFetchedError(it)
             })
 
         disposable.add(result)
     }
 
-    private fun onItemFetched(heroes: List<Hero>, recyclerView: RecyclerView) {
-        val myAdapter = HeroesRecyclerViewAdapter(heroes as MutableList<Hero>) { hero ->
+    private fun attachTouchHelper(recyclerView: RecyclerView) {
+        ItemTouchHelper(object : ItemTouchHelper.Callback() {
+            override fun getMovementFlags(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+            ): Int {
+                return makeMovementFlags(0, ItemTouchHelper.END)
+            }
+
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder,
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                if (direction == ItemTouchHelper.END) {
+                    val position = viewHolder.absoluteAdapterPosition
+                    adapter?.items?.removeAt(position)
+                    adapter?.notifyItemRemoved(position)
+                }
+            }
+        }).attachToRecyclerView(recyclerView)
+    }
+
+    private fun onItemsFetched(heroes: List<Hero>, recyclerView: RecyclerView) {
+        adapter = HeroesRecyclerViewAdapter(heroes as ArrayList<Hero>) { hero ->
             AlertDialog.Builder(this@MainActivity)
                 .setTitle(hero.name)
                 .setMessage(hero.allInfo())
                 .create()
                 .show()
         }
-        recyclerView.adapter = myAdapter
+        recyclerView.adapter = adapter
     }
 
-    private fun onItemFetchedError(error: Throwable) {
+    private fun onItemsFetchedError(error: Throwable) {
         Toast.makeText(this, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
     }
 
