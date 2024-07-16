@@ -12,6 +12,7 @@ import com.example.lesson7.network.HeroService
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import java.util.Collections
 
 class MainActivity : Activity() {
     private val disposable = CompositeDisposable()
@@ -27,7 +28,6 @@ class MainActivity : Activity() {
         attachTouchHelper(recyclerView)
 
         val api = ApiClient.retrofit.create(HeroService::class.java)
-
         val result = api.getHeroes()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -46,7 +46,7 @@ class MainActivity : Activity() {
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
             ): Int {
-                return makeMovementFlags(0, ItemTouchHelper.END)
+                return makeMovementFlags(ItemTouchHelper.UP or ItemTouchHelper.DOWN, ItemTouchHelper.END)
             }
 
             override fun onMove(
@@ -54,6 +54,10 @@ class MainActivity : Activity() {
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder,
             ): Boolean {
+                val fromIndex = viewHolder.absoluteAdapterPosition
+                val toIndex = target.absoluteAdapterPosition
+                adapter?.items?.let { Collections.swap(it, fromIndex, toIndex) }
+                adapter?.notifyItemMoved(fromIndex, toIndex)
                 return false
             }
 
