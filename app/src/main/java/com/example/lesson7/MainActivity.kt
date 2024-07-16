@@ -29,22 +29,27 @@ class MainActivity : Activity() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
-                val items = it
-                val myAdapter = HeroesRecyclerViewAdapter(items as MutableList<Hero>) { hero ->
-                    AlertDialog.Builder(this@MainActivity)
-                        .setTitle(hero.name)
-                        .setMessage(hero.allInfo())
-                        .create()
-                        .show()
-                }
-                recyclerView.adapter = myAdapter
+                onItemFetched(it, recyclerView)
             }, {
-                Toast
-                    .makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT)
-                    .show()
+                onItemFetchedError(it)
             })
 
         disposable.add(result)
+    }
+
+    private fun onItemFetched(heroes: List<Hero>, recyclerView: RecyclerView) {
+        val myAdapter = HeroesRecyclerViewAdapter(heroes as MutableList<Hero>) { hero ->
+            AlertDialog.Builder(this@MainActivity)
+                .setTitle(hero.name)
+                .setMessage(hero.allInfo())
+                .create()
+                .show()
+        }
+        recyclerView.adapter = myAdapter
+    }
+
+    private fun onItemFetchedError(error: Throwable) {
+        Toast.makeText(this, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroy() {
