@@ -10,7 +10,7 @@ import com.bumptech.glide.Glide
 import com.example.lesson7.models.Hero
 
 class HeroesRecyclerViewAdapter(
-    var items: ArrayList<Hero>,
+    private var items: ArrayList<Hero>,
     val onItemClick: (result: Hero) -> Unit
 ) :
     RecyclerView.Adapter<HeroViewHolder>() {
