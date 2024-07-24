@@ -1,6 +1,7 @@
 package com.example.lesson7
 
 import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,6 +31,9 @@ class HeroesListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        parentFragmentManager.popBackStack()
+
+        onItemClick = { hero -> setOnItemClickedListener(hero) }
 
         val recyclerView: RecyclerView = view.findViewById(R.id.hero_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(view.context)
@@ -58,12 +62,24 @@ class HeroesListFragment : Fragment() {
         Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
     }
 
+    private fun setOnItemClickedListener(hero: Hero) {
+        val orientation = resources.configuration.orientation
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            val heroFragment = parentFragmentManager.findFragmentById(R.id.hero_info) as HeroDetailsFragment
+            heroFragment.setDetails(hero)
+            heroFragment.show()
+        } else {
+            val heroFragmentToAdd = HeroDetailsFragment()
+            heroFragmentToAdd.setDetails(hero)
+            parentFragmentManager.beginTransaction()
+                .add(R.id.heroes, heroFragmentToAdd)
+                .addToBackStack("HeroDetailsFragment")
+                .commit()
+        }
+    }
+
     override fun onDestroy() {
         disposable.dispose()
         super.onDestroy()
-    }
-
-    fun setOnItemClickedListener(onItemClick: (result: Hero) -> Unit) {
-        this.onItemClick = onItemClick
     }
 }
