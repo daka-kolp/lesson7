@@ -19,14 +19,15 @@ object HeroesListViewModel : ViewModel() {
         _uiHeroesState.value = UIHeroesState.Processing
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                _uiHeroesState.postValue(UIHeroesState.Processing)
+                var value: UIHeroesState = UIHeroesState.Processing
+                _uiHeroesState.postValue(value)
                 try {
                     val result = repository.getHeroes()
-                    _uiHeroesState.postValue(UIHeroesState.Result(result))
+                    value = UIHeroesState.Result(result)
                 } catch (e: Exception) {
-                    _uiHeroesState.postValue(
-                        UIHeroesState.Error(e.localizedMessage ?: e.toString())
-                    )
+                    value = UIHeroesState.Error(e.localizedMessage ?: e.toString())
+                } finally {
+                    _uiHeroesState.postValue(value)
                 }
             }
         }

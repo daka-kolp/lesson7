@@ -20,8 +20,11 @@ import com.example.lesson7.ui.fragments.hero_details.HeroDetailsFragment
 
 class HeroesListFragment : Fragment() {
     private lateinit var viewModel: HeroesListViewModel
-    private var adapter: HeroesRecyclerViewAdapter? = null
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var swipeContainer: SwipeRefreshLayout
+    private lateinit var progressBar: ProgressBar
     private var onItemClick: (result: Hero) -> Unit = {}
+    private var adapter: HeroesRecyclerViewAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,43 +40,16 @@ class HeroesListFragment : Fragment() {
 
         onItemClick = { hero -> setOnItemClickedListener(hero) }
 
-        val recyclerView: RecyclerView = view.findViewById(R.id.hero_recycler_view)
+        recyclerView = view.findViewById(R.id.hero_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(view.context)
-        val swipeContainer: SwipeRefreshLayout = view.findViewById(R.id.refreshLayout)
-        val progressBar: ProgressBar = view.findViewById(R.id.list_loading)
+        swipeContainer = view.findViewById(R.id.refreshLayout)
+        progressBar = view.findViewById(R.id.list_loading)
 
         viewModel = ViewModelProvider(this)[HeroesListViewModel::class.java]
         viewModel.getHeroes()
-        viewModel.uiHeroesState.observe(viewLifecycleOwner) { uiState ->
-            swipeContainer.isRefreshing = false
-
-            when (uiState) {
-                is HeroesListViewModel.UIHeroesState.Error -> {
-                    onItemsFetchedError(uiState.error, view.context)
-                }
-
-                is HeroesListViewModel.UIHeroesState.Result -> {
-                    onItemsFetched(uiState.heroes, recyclerView)
-                }
-
-                is HeroesListViewModel.UIHeroesState.Empty -> Unit
-                is HeroesListViewModel.UIHeroesState.Processing -> Unit
-            }
-            progressBar.isVisible = uiState == HeroesListViewModel.UIHeroesState.Processing
-        }
+        viewModel.uiHeroesState.observe(viewLifecycleOwner) { onViewUpdate(it, view) }
 
         swipeContainer.setOnRefreshListener { viewModel.getHeroes() }
-    }
-
-    private fun onItemsFetched(heroes: List<Hero>, recyclerView: RecyclerView) {
-        adapter = HeroesRecyclerViewAdapter(heroes as ArrayList<Hero>) {
-            onItemClick(it)
-        }
-        recyclerView.adapter = adapter
-    }
-
-    private fun onItemsFetchedError(error: String, context: Context) {
-        Toast.makeText(context, "Error: $error", Toast.LENGTH_LONG).show()
     }
 
     private fun setOnItemClickedListener(hero: Hero) {
@@ -88,5 +64,29 @@ class HeroesListFragment : Fragment() {
                 .addToBackStack("HeroDetailsFragment")
                 .commit()
         }
+    }
+
+    private fun onViewUpdate(uiState: HeroesListViewModel.UIHeroesState, view: View) {
+        swipeContainer.isRefreshing = false
+
+        when (uiState) {
+            is HeroesListViewModel.UIHeroesState.Error -> onItemsFetchedError(uiState.error, view.context)
+            is HeroesListViewModel.UIHeroesState.Result -> onItemsFetched(uiState.heroes, recyclerView)
+            is HeroesListViewModel.UIHeroesState.Empty -> Unit
+            is HeroesListViewModel.UIHeroesState.Processing -> Unit
+        }
+
+        progressBar.isVisible = uiState == HeroesListViewModel.UIHeroesState.Processing
+    }
+
+    private fun onItemsFetched(heroes: List<Hero>, recyclerView: RecyclerView) {
+        adapter = HeroesRecyclerViewAdapter(heroes as ArrayList<Hero>) {
+            onItemClick(it)
+        }
+        recyclerView.adapter = adapter
+    }
+
+    private fun onItemsFetchedError(error: String, context: Context) {
+        Toast.makeText(context, "Error: $error", Toast.LENGTH_LONG).show()
     }
 }

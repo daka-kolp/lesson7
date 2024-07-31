@@ -33,10 +33,12 @@ class HeroDetailsFragment(private val hero: Hero? = null) : Fragment() {
 
         viewModel = ViewModelProvider(this)[HeroDetailsViewModel::class.java]
         if (hero != null) setDetails(hero)
-        viewModel.heroToUpdate.observe(viewLifecycleOwner) { hero ->
-            imageView?.let { Glide.with(requireView()).load(hero?.images?.lg).into(it) }
-            textView?.text = hero?.allInfo()
-        }
+        viewModel.heroToUpdate.observe(viewLifecycleOwner) { onViewUpdate(it) }
+    }
+
+    private fun onViewUpdate(hero: Hero?) {
+        imageView?.let { Glide.with(requireView()).load(hero?.images?.lg).into(it) }
+        textView?.text = hero?.allInfo()
     }
 
     fun setDetails(hero: Hero) {
