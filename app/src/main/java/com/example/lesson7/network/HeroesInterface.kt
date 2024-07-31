@@ -1,10 +1,9 @@
 package com.example.lesson7.network
 
 import com.example.lesson7.models.Hero
-import io.reactivex.Single
 import retrofit2.http.GET
 
-interface HeroService {
+interface HeroesInterface {
     @GET("all.json")
-    fun getHeroes(): Single<List<Hero>>
+    suspend fun getHeroes(): List<Hero>
 }

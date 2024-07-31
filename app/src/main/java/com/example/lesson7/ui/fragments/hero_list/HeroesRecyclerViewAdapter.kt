@@ -1,4 +1,4 @@
-package com.example.lesson7
+package com.example.lesson7.ui.fragments.hero_list
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.lesson7.R
 import com.example.lesson7.models.Hero
 
 class HeroesRecyclerViewAdapter(

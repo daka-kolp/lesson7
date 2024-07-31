@@ -1,4 +1,4 @@
-package com.example.lesson7
+package com.example.lesson7.ui.fragments.hero_list
 
 import android.content.Context
 import android.content.res.Configuration
@@ -6,18 +6,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.lesson7.R
 import com.example.lesson7.models.Hero
-import com.example.lesson7.network.HeroService
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
+import com.example.lesson7.ui.fragments.hero_details.HeroDetailsFragment
 
 class HeroesListFragment : Fragment() {
-    private val disposable = CompositeDisposable()
+    private lateinit var viewModel: HeroesListViewModel
     private var adapter: HeroesRecyclerViewAdapter? = null
     private var onItemClick: (result: Hero) -> Unit = {}
 
@@ -37,18 +39,30 @@ class HeroesListFragment : Fragment() {
 
         val recyclerView: RecyclerView = view.findViewById(R.id.hero_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(view.context)
+        val swipeContainer: SwipeRefreshLayout = view.findViewById(R.id.refreshLayout)
+        val progressBar: ProgressBar = view.findViewById(R.id.list_loading)
 
-        val api = ApiClient.retrofit.create(HeroService::class.java)
-        val result = api.getHeroes()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                onItemsFetched(it, recyclerView)
-            }, {
-                onItemsFetchedError(it, view.context)
-            })
+        viewModel = ViewModelProvider(this)[HeroesListViewModel::class.java]
+        viewModel.getHeroes()
+        viewModel.uiHeroesState.observe(viewLifecycleOwner) { uiState ->
+            swipeContainer.isRefreshing = false
 
-        disposable.add(result)
+            when (uiState) {
+                is HeroesListViewModel.UIHeroesState.Error -> {
+                    onItemsFetchedError(uiState.error, view.context)
+                }
+
+                is HeroesListViewModel.UIHeroesState.Result -> {
+                    onItemsFetched(uiState.heroes, recyclerView)
+                }
+
+                is HeroesListViewModel.UIHeroesState.Empty -> Unit
+                is HeroesListViewModel.UIHeroesState.Processing -> Unit
+            }
+            progressBar.isVisible = uiState == HeroesListViewModel.UIHeroesState.Processing
+        }
+
+        swipeContainer.setOnRefreshListener { viewModel.getHeroes() }
     }
 
     private fun onItemsFetched(heroes: List<Hero>, recyclerView: RecyclerView) {
@@ -58,8 +72,8 @@ class HeroesListFragment : Fragment() {
         recyclerView.adapter = adapter
     }
 
-    private fun onItemsFetchedError(error: Throwable, context: Context) {
-        Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+    private fun onItemsFetchedError(error: String, context: Context) {
+        Toast.makeText(context, "Error: $error", Toast.LENGTH_LONG).show()
     }
 
     private fun setOnItemClickedListener(hero: Hero) {
@@ -67,19 +81,12 @@ class HeroesListFragment : Fragment() {
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             val heroFragment = parentFragmentManager.findFragmentById(R.id.hero_info) as HeroDetailsFragment
             heroFragment.setDetails(hero)
-            heroFragment.show()
         } else {
-            val heroFragmentToAdd = HeroDetailsFragment()
-            heroFragmentToAdd.setDetails(hero)
+            val heroFragmentToAdd = HeroDetailsFragment(hero)
             parentFragmentManager.beginTransaction()
                 .add(R.id.heroes, heroFragmentToAdd)
                 .addToBackStack("HeroDetailsFragment")
                 .commit()
         }
-    }
-
-    override fun onDestroy() {
-        disposable.dispose()
-        super.onDestroy()
     }
 }

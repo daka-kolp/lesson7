@@ -6,7 +6,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/heroes"
-        android:name="com.example.lesson7.HeroesListFragment"
+        android:name="com.example.lesson7.ui.fragments.hero_list.HeroesListFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -17,7 +17,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/hero_info"
-        android:name="com.example.lesson7.HeroDetailsFragment"
+        android:name="com.example.lesson7.ui.fragments.hero_details.HeroDetailsFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
