@@ -17,7 +17,9 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.lesson7.R
 import com.example.lesson7.models.Hero
 import com.example.lesson7.ui.fragments.hero_details.HeroDetailsFragment
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class HeroesListFragment : Fragment() {
     private lateinit var viewModel: HeroesListViewModel
     private lateinit var recyclerView: RecyclerView

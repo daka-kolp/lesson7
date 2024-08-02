@@ -4,23 +4,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lesson7.HeroesApplication
 import com.example.lesson7.models.Hero
 import com.example.lesson7.network.HeroesRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class HeroesListViewModel : ViewModel() {
+@HiltViewModel
+class HeroesListViewModel @Inject constructor(private val repository: HeroesRepository) : ViewModel() {
     private val _uiHeroesState = MutableLiveData<UIHeroesState>(UIHeroesState.Empty)
     val uiHeroesState: LiveData<UIHeroesState> = _uiHeroesState
-    @Inject
-    lateinit var repository: HeroesRepository
-
-    init {
-        HeroesApplication.component.inject(this)
-    }
 
     fun getHeroes() {
         _uiHeroesState.value = UIHeroesState.Processing
@@ -41,8 +36,8 @@ class HeroesListViewModel : ViewModel() {
     }
 
     sealed class UIHeroesState {
-        object Empty : UIHeroesState()
-        object Processing : UIHeroesState()
+        data object Empty : UIHeroesState()
+        data object Processing : UIHeroesState()
         class Result(val heroes: List<Hero>) : UIHeroesState()
         class Error(val error: String) : UIHeroesState()
     }
