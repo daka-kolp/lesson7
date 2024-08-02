@@ -70,8 +70,8 @@ class HeroesListFragment : Fragment() {
         swipeContainer.isRefreshing = false
 
         when (uiState) {
-            is HeroesListViewModel.UIHeroesState.Error -> onItemsFetchedError(uiState.error, view.context)
             is HeroesListViewModel.UIHeroesState.Result -> onItemsFetched(uiState.heroes, recyclerView)
+            is HeroesListViewModel.UIHeroesState.Error -> onItemsFetchedError(uiState.error, view.context)
             is HeroesListViewModel.UIHeroesState.Empty -> Unit
             is HeroesListViewModel.UIHeroesState.Processing -> Unit
         }

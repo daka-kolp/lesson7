@@ -71,7 +71,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation("androidx.recyclerview:recyclerview:1.2.1")
-    implementation("com.github.javafaker:javafaker:1.0.2")
     implementation("com.github.bumptech.glide:glide:4.14.2")
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
@@ -79,4 +78,5 @@ dependencies {
     implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
     implementation("io.reactivex.rxjava2:rxjava:2.2.21")
     implementation("com.squareup.retrofit2:adapter-rxjava2:2.11.0")
+    implementation("io.insert-koin:koin-android:3.5.0")
 }

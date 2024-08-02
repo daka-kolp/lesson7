@@ -4,15 +4,16 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lesson7.HeroesApplication
 import com.example.lesson7.models.Hero
+import com.example.lesson7.network.HeroesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.java.KoinJavaComponent.inject
 
 object HeroesListViewModel : ViewModel() {
     private val _uiHeroesState = MutableLiveData<UIHeroesState>(UIHeroesState.Empty)
-    private val repository = HeroesApplication.getApp().repository
+    private val repository: HeroesRepository by inject(clazz = HeroesRepository::class.java)
     val uiHeroesState: LiveData<UIHeroesState> = _uiHeroesState
 
     fun getHeroes() {
