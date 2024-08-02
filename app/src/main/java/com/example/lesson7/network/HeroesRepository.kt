@@ -1,11 +1,12 @@
 package com.example.lesson7.network
 
 import com.example.lesson7.models.Hero
-import retrofit2.Retrofit
+import javax.inject.Singleton
 
-class HeroesRepository(private val client: Retrofit) {
+@Singleton
+class HeroesRepository(private val client: ApiClient) {
     suspend fun getHeroes(): List<Hero> {
-        val api = client.create(HeroesInterface::class.java)
+        val api = client.retrofit.create(HeroesInterface::class.java)
         return api.getHeroes()
     }
 }
